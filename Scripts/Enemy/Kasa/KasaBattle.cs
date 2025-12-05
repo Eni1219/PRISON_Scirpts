@@ -2,60 +2,90 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 笠敵の戦闘状態クラス。
+/// プレイヤーを追跡し、攻撃距離に入ったら攻撃状態に遷移します。
+/// </summary>
 public class KasaBattle : EnemyState
 {
+    /// <summary>プレイヤーのTransform</summary>
     private Transform player;
+
+    /// <summary>笠敵の参照</summary>
     private Enemy_Kasa enemy;
+
+    /// <summary>移動方向（-1 or 1）</summary>
     private int moveDir;
-    public KasaBattle(Enemy _enemyBase, EnemyStateMachine _stateMachine, string _animBoolName,Enemy_Kasa enemy) : base(_enemyBase, _stateMachine, _animBoolName)
+
+    /// <summary>
+    /// コンストラクタ。
+    /// </summary>
+    public KasaBattle(Enemy _enemyBase, EnemyStateMachine _stateMachine, string _animBoolName, Enemy_Kasa enemy) : base(_enemyBase, _stateMachine, _animBoolName)
     {
-        this.enemy= enemy;
+        this.enemy = enemy;
     }
 
+    /// <summary>
+    /// 状態開始時の処理。プレイヤーを検索します。
+    /// </summary>
     public override void Enter()
     {
         base.Enter();
         player = GameObject.Find("Player").transform;
     }
 
+    /// <summary>
+    /// 状態終了時の処理。
+    /// </summary>
     public override void Exit()
     {
         base.Exit();
     }
+
+    /// <summary>
+    /// 攻撃可能かどうかをチェックします（クールダウン確認）。
+    /// </summary>
+    /// <returns>攻撃可能な場合true</returns>
     private bool CanAttack()
     {
-        if(Time.time>=enemy.lastTimeAttacked+enemy.attackCoolDown)
+        if (Time.time >= enemy.lastTimeAttacked + enemy.attackCoolDown)
         {
-            enemy.lastTimeAttacked= Time.time;
+            enemy.lastTimeAttacked = Time.time;
             return true;
         }
         Debug.Log("Attack CD");
         return false;
     }
+
+    /// <summary>
+    /// 毎フレームの更新処理。プレイヤーを追跡し、攻撃距離で攻撃します。
+    /// </summary>
     public override void Update()
     {
         base.Update();
-        if(enemy.IsPlayerDetected())
+        // プレイヤーを検出している場合
+        if (enemy.IsPlayerDetected())
         {
-            stateTimer=enemy.battleTime;
+            stateTimer = enemy.battleTime;
+            // 攻撃距離に入ったら攻撃
             if (enemy.IsPlayerDetected().distance < enemy.attackDistance)
             {
                 if (CanAttack())
                     stateMachine.ChangeState(enemy.attackState);
             }
-         
         }
         else
         {
-            if(stateTimer<0||Vector2.Distance(player.transform.position,enemy.transform.position)>7)
+            // プレイヤーを見失ったらアイドル状態へ
+            if (stateTimer < 0 || Vector2.Distance(player.transform.position, enemy.transform.position) > 7)
                 stateMachine.ChangeState(enemy.idleState);
         }
-            
-            
+
+        // プレイヤーの方向に向かって移動
         if (player.position.x > enemy.transform.position.x)
             moveDir = 1;
-        else if(player.position.x < enemy.transform.position.x)
-            moveDir=-1;
-        enemy.SetVelocity(moveDir * enemy.moveSpeed,  rb.velocity.y);
+        else if (player.position.x < enemy.transform.position.x)
+            moveDir = -1;
+        enemy.SetVelocity(moveDir * enemy.moveSpeed, rb.velocity.y);
     }
 }

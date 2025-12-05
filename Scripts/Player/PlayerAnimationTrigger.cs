@@ -3,17 +3,28 @@ using System.Collections.Generic;
 using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 
+/// <summary>
+/// プレイヤーのアニメーションイベントを処理するクラス。
+/// アニメーションの特定フレームで攻撃判定や効果音再生を行います。
+/// </summary>
 public class PlayerAnimationTrigger : MonoBehaviour
 {
+    /// <summary>親オブジェクトのPlayerコンポーネントを取得</summary>
     private Player player => GetComponentInParent<Player>();
 
-    // アニメーションイベントから呼ばれる汎用トリガー
+    /// <summary>
+    /// アニメーションイベントから呼ばれる汎用トリガー。
+    /// 現在の状態にアニメーション完了を通知します。
+    /// </summary>
     private void AnimationTrigger()
     {
         player.AnimationTrigger();
     }
 
-    // 回復アニメーションイベント時に呼ばれる処理
+    /// <summary>
+    /// 回復アニメーションイベント時に呼ばれる処理。
+    /// 回復回数があればHPを回復します。
+    /// </summary>
     private void HealTrigger()
     {
         if (player.TryUseHeal()) // 回復可能かチェック
@@ -23,7 +34,10 @@ public class PlayerAnimationTrigger : MonoBehaviour
         }
     }
 
-    // 攻撃時の効果音を再生（indexによって分岐）
+    /// <summary>
+    /// 攻撃時の効果音を再生します。
+    /// </summary>
+    /// <param name="index">攻撃のインデックス（2の場合はAttack2を再生）</param>
     public void PlayAttackSE(int index)
     {
         if (index == 2)
@@ -36,14 +50,19 @@ public class PlayerAnimationTrigger : MonoBehaviour
         }
     }
 
-    // 空中攻撃時の効果音を再生
+    /// <summary>
+    /// 空中攻撃時の効果音を再生します。
+    /// </summary>
     public void PlayAirAttackSE()
     {
         if (AudioManager.instance != null)
             AudioManager.instance.Play("AirAttack");
     }
 
-    // 攻撃判定を行う（アニメーションイベントから呼ばれる）
+    /// <summary>
+    /// 攻撃判定を行います（アニメーションイベントから呼ばれます）。
+    /// 攻撃範囲内の敵やBreakableオブジェクトにダメージを与えます。
+    /// </summary>
     private void AttackTrigger()
     {
         // 攻撃範囲内のコライダーを取得
